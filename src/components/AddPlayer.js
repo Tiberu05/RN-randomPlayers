@@ -1,5 +1,6 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { View, TextInput, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Button as PaperButton, TextInput as PaperInput } from 'react-native-paper';
 import { Context } from '../context/Store';
 
 import { addPlayer } from '../utility/Utility';
@@ -10,9 +11,17 @@ const AddPlayer = () => {
     const [name, setName] = useState('');
     const textInput = useRef();
 
+    useEffect(() => {
+        dispatch({ type: 'CLEAR_ERROR'})
+    }, [name]);
+
+
     return (
         <View style={styles.addView}>
-            <TextInput
+            <PaperInput
+                mode='outlined'
+                selectionColor='#001f3f'
+                theme={{ colors: { primary: '#001f3f'}}}
                 style={styles.inputName}
                 clearButtonMode='always'
                 ref={textInput}
@@ -22,7 +31,7 @@ const AddPlayer = () => {
                 placeholder='Enter name here'
             />
             <TouchableOpacity title='Add Player' onPress={() => addPlayer(state.players, name, dispatch, textInput)}>
-                <Text>Add Player</Text>
+                <PaperButton  style={styles.button} mode='outlined' color='#001f3f'>Add Player</PaperButton>
             </TouchableOpacity>
         </View>
         
@@ -31,16 +40,22 @@ const AddPlayer = () => {
 
 const styles = StyleSheet.create({
     addView: {
-        flexDirection: 'row'
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+        alignItems: 'flex-end',
+        paddingVertical: 20
     },
     inputName: {
         textAlign: 'center',
-        width: '50%',
-        borderBottomWidth: 1,
-        borderColor: 'grey',
-        paddingBottom: 5,
-        marginBottom: 10
-      },
+        width: '40%',
+        height: 35,
+        backgroundColor: '#fff',
+    },
+    button: {
+        width: '100%',
+        height: 37
+    }
 })
 
 export default AddPlayer;

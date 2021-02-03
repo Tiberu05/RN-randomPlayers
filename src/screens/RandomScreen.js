@@ -1,54 +1,29 @@
-import React from 'react';
-import { View, Text, FlatList, StyleSheet, ScrollView } from 'react-native';
+import React, { useContext } from 'react';
+import { Text, StyleSheet, ScrollView } from 'react-native';
+import { Context } from '../context/Store';
+import { Button as PaperButton } from 'react-native-paper';
 
-const displayRandom = (players, teams, playersPerTeam) => {
-    const newArr = [];
-    console.log(players);
-    for (let i = 1; i < teams + 1; i++) {
-        newArr.push(`Team ${i}`);
-        for (let x = 0; x < playersPerTeam; x++) {
-            if (x === playersPerTeam - 1) {
-                newArr.push(players[x]);
-                players.splice(0, playersPerTeam);
-                break;
-            } else {
-                newArr.push(players[x]);
-            }
-        }
-    }
+import { displayRandom } from '../utility/Utility';
 
-    return newArr;
-}
+import TeamComponent from '../components/TeamComponent';
 
-const RandomScreen = ({ route: { params: { players, teams, playersPerTeam}}}) => {
-    const randomPlayers = displayRandom(players, teams, playersPerTeam);
+const RandomScreen = () => {
 
-    console.log(randomPlayers);
+    const [state, dispatch] = useContext(Context);
+
+    const teams = displayRandom(state.players, state.teams, state.playersPerTeam);
+
+    console.log(teams);
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
 
-            {
-                randomPlayers.map(el => {
-                    if (el.includes('Team')) {
-                        return <Text key={el} style={styles.teams}>{el}</Text>
-                    } else {
-                        return <Text key={el} style={styles.players}>{el}</Text>
-                    }
+             {
+                teams.map(el => {
+                    return <TeamComponent teamNr={el.teamNr} players={el.players} />
                 })
             }
             
-            {/* <FlatList
-                style={styles.list}
-                keyExtractor={item => item}
-                data={randomPlayers}
-                renderItem={({item}) => {
-                    if (item.includes('Team')) {
-                        return <Text style={styles.teams}>{item}</Text>
-                    } else {
-                        return <Text style={styles.players}>{item}</Text>
-                    }
-                }}
-            /> */}
         </ScrollView>
     )
 };
@@ -56,8 +31,7 @@ const RandomScreen = ({ route: { params: { players, teams, playersPerTeam}}}) =>
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: 'blue'
+        paddingTop: 20
     },
     list: {
         textAlign: 'center',
@@ -65,12 +39,11 @@ const styles = StyleSheet.create({
         borderColor: 'red'
     },
     teams: {
-        fontSize: 33,
-        textDecorationLine: 'underline'
+        height: 53,
     },
     players: {
         fontSize: 23,
-        textAlign: 'center'
+        textAlign: 'center',
     }
 })
 

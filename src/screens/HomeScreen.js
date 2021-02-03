@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import {  StyleSheet, Text, View, TextInput, Button, FlatList, ScrollView, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
+import {  StyleSheet, Text, View, TextInput, Button, FlatList, ScrollView, TouchableWithoutFeedback, TouchableOpacity, Dimensions } from 'react-native';
 import { Button as PaperButton } from 'react-native-paper';
 
 import { Context } from '../context/Store';
@@ -8,65 +8,15 @@ import { Context } from '../context/Store';
 // COMPONENTS
 import PickerSelect from '../components/PickerSelect';
 import AddPlayer from '../components/AddPlayer';
+import Filters from '../components/Filters';
+import PlayersView from '../components/PlayersView';
 
-import { addPlayer } from '../utility/Utility';
-
-const shuffle = arr => {
-  for (let i = arr.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-};
-
-// const INITIAL_STATE = {
-//     players: [],
-//     teams: 1,
-//     playersPerTeam: 1,
-//     error: '',
-// };
-
-// const reducer = (state, action) => {
-//     switch(action.type) {
-//         case "ADD_PLAYER":
-//             return { ...state, players: [...state.players, action.payload] };
-//         case "SET_TEAMS":
-//             return { ...state, teams: action.payload }
-//         case "SET_PLAYERS":
-//             return { ...state, playersPerTeam: action.payload }
-//         case "SET_ERROR":
-//             return { ...state, error: action.payload }
-//         case "CLEAR_ERROR":
-//             return { ...state, error: ''}
-//         default:
-//             return state;
-//     }
-// }
-
-// const addPlayer = (players, player, dispatch, textInput) => {
-//     const newArr = players.map(el => el.toLowerCase());
-//     const index = newArr.findIndex(el => el === player.toLowerCase());
-
-//     if (player.length < 1) {
-//         dispatch({ type: 'SET_ERROR', payload: 'Input field is empty'});
-//     } else if (player.length > 0 && index !== -1) {
-//         dispatch({ type: 'SET_ERROR', payload: 'Name already added'});
-//     } else if (player.length > 0 && index === -1) {
-//         dispatch({ type: 'ADD_PLAYER', payload: player })             
-//         textInput.current.clear();
-//         dispatch({ type: 'CLEAR_ERROR' }); 
-//     }
-// }
 
 const HomeScreen = ({ navigation }) => {
 
     const [state, dispatch] = useContext(Context);
 
-    const [name, setName] = useState('');
-    const [showSelector, setShowSelector] = useState({ numberTeams: false, numberPlayers: false, display: false });
-    const [error, setError] = useState('');
-    const textInput = useRef();
-
-    
+    const windowHeight = Dimensions.get('screen').height;
 
     const handleSelect = (type, value) => {
         if (type === 'teams') {
@@ -76,81 +26,77 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-    useEffect(() => {
-        dispatch({ type: 'CLEAR_ERROR'})
-    }, [name]);
-
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView contentContainerStyle={{height: windowHeight + (state.players.length * 3)}} scrollEnabled={true}>
 
-            <TouchableWithoutFeedback onPress={() => setShowSelector({ numberTeams: false, numberPlayers: false, display: false })}>
+            <TouchableWithoutFeedback onPress={() => dispatch({ type: "HIDE_PICKER" })}>
                 <View style={styles.contentContainer}>
-                {/* <TextInput
-                    style={styles.inputName}
-                    clearButtonMode='always'
-                    ref={textInput}
-                    onChangeText={playerName => setName(playerName)}
-                    blurOnSubmit={false}
-                    onSubmitEditing={(event) => addPlayer(state.players, event.nativeEvent.text, dispatch, textInput)}
-                    placeholder='Enter name here'
-                />
-                <Button title='Add Player' onPress={() => addPlayer(state.players, name, dispatch, textInput)}/> */}
 
-                <AddPlayer />
+                    <AddPlayer />
 
-                <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%', fontWeight: '700'}}>
-                    <TouchableOpacity onPress={() => setShowSelector({ numberTeams: true, numberPlayers: false, display: true })}>
-                        
-                        <PaperButton color='#001f3f'>Teams: {state.teams}</PaperButton>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setShowSelector({ numberTeams: false, numberPlayers: true, display: true })}>
-                        <PaperButton color='#001f3f'>Players/Team: {state.playersPerTeam}</PaperButton> 
-                    </TouchableOpacity>
-                    
-                </View>
-                <View style={styles.addedPlayers} >
-                    {
-                        state.players.map(player => {
-                            return <Text key={player} style={{ fontSize: 15}}>{player}</Text>
-                        })
-                    }
-                </View>
-            
+                    <PlayersView />
 
-                <PaperButton mode='contained' color='#001f3f' onPress={() => {
-                    const newArr = state.players.map(el => el);
-                    shuffle(newArr);
-                    if (state.players.length < state.teams * state.playersPerTeam) {
-                        (state.teams * state.playersPerTeam) - (state.players.length) === 1 ? dispatch({ type: 'SET_ERROR', payload: 'You have to add 1 more player'}) : dispatch({ type: 'SET_ERROR', payload: `You have to ${(state.teams * state.playersPerTeam) - (state.players.length) } add more players`}); 
-                    } else {
-                        dispatch({ type: 'CLEAR_ERROR'})
-                        navigation.navigate('Random', { players: newArr, teams: state.teams, playersPerTeam: state.playersPerTeam })
-                    }
+                    <Filters />
 
-                }}>Generate Teams</PaperButton>
+                    <View style={styles.bottomContainer}>
+                        <PaperButton style={styles.generatorButton} mode='contained' color='#001f3f' onPress={() => {
+                            if (state.players.length < state.teams * state.playersPerTeam) {
+                                (state.teams * state.playersPerTeam) - (state.players.length) === 1 ? dispatch({ type: 'SET_ERROR', payload: 'You have to add 1 more player'}) : dispatch({ type: 'SET_ERROR', payload: `You have to ${(state.teams * state.playersPerTeam) - (state.players.length) } add more players`}); 
+                            } else {
+                                dispatch({ type: 'CLEAR_ERROR'})
+                                navigation.navigate('Random');
+                            }
 
-                {
-                    !state.error ? null : <Text style={{ color: 'red' }}>{state.error}</Text>
-                }
+                        }}>Generate Teams</PaperButton>
+
+                        {
+                            !state.error ? null : <Text style={{ color: 'red' }}>{state.error}</Text>
+                        }
+                    </View>
                 
+                    
+                    
+
                 </View>
             </TouchableWithoutFeedback>
 
-            { !showSelector.display ? null : (
-                <View style={styles.selectorContainer}>
+            { !state.picker.display ? null : (
 
-                { 
-                    !showSelector.numberTeams ? null : (
-                        <PickerSelect type='teams' handleSelect={handleSelect} selectedValue={state.teams} />   
-                    )
-                }
-                {
-                    !showSelector.numberPlayers ? null : (
-                        <PickerSelect type='players' handleSelect={handleSelect} selectedValue={state.playersPerTeam} /> 
-                    )
-                }
+                <View>
 
+                    <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'flex-end', bottom: 200, backgroundColor: '#F0F0F0',}}>
+                    <TouchableOpacity onPress={() => dispatch({ type: "HIDE_PICKER"})}>
+                        <PaperButton color='#0074D9'>Done</PaperButton>
+                    </TouchableOpacity>
+                    </View>
+
+                    <View style={{
+                        position: 'absolute',
+                        backgroundColor: '#F0F0F0',
+                        height: 230,
+                        width: '100%',
+                        bottom: -30,
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                        opacity: 1
+                    }}>
+                        
+                    
+                    
+
+                    { 
+                        !state.picker.numberTeams ? null : (
+                            <PickerSelect type='teams' selectedValue={state.teams} />   
+                        )
+                    }
+                    {
+                        !state.picker.numberPlayers ? null : (
+                            <PickerSelect type='players' selectedValue={state.playersPerTeam} /> 
+                        )
+                    }
+
+                    </View>
                 </View>
             )}  
 
@@ -163,7 +109,6 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    height: '100%'
   },
   contentContainer: {
     alignItems: 'center',
@@ -171,30 +116,21 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingTop: 10
   },
-  addedPlayers: {
-    width: '90%',
-    borderBottomWidth: 1,
-    borderTopWidth: 1,
-    alignItems: 'center'
-
-  },
-  inputName: {
-    textAlign: 'center',
-    width: '50%',
-    borderBottomWidth: 1,
-    borderColor: 'grey',
-    paddingBottom: 5,
-    marginBottom: 10
-  },
   selectorContainer: {
-    position: 'absolute',
-    backgroundColor: 'lightgrey',
-    height: 170,
-    width: '100%',
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    opacity: 1
+    // position: 'absolute',
+    // backgroundColor: 'lightgrey',
+    // height: 170,
+    // width: '100%',
+    // bottom: 0,
+    // alignItems: 'center',
+    // justifyContent: 'flex-start',
+    // opacity: 1
+  },
+  generatorButton: {
+      marginTop: 25,
+  },
+  bottomContainer: {
+      paddingBottom: 20
   }
   
 });

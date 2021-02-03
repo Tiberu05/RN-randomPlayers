@@ -19,3 +19,29 @@ export const shuffle = arr => {
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
 };
+
+export const displayRandom = (players, teams, playersPerTeam) => {
+    const shuffledArray = players.map(el => el);
+    shuffle(shuffledArray);
+    const newArr = [];
+    for (let i = 1; i < teams + 1; i++) {
+        //newArr.push(`Team ${i}`);
+        const team = {};
+        team.teamNr = i;
+        team.players = [];
+        for (let x = 0; x < playersPerTeam; x++) {
+            if (x === playersPerTeam - 1) {
+                team.players.push(shuffledArray[x])
+                //newArr.push(shuffledArray[x]);
+                newArr.push(team);
+                shuffledArray.splice(0, playersPerTeam);
+                break;
+            } else {
+                //newArr.push(shuffledArray[x]);
+                team.players.push(shuffledArray[x])
+            }
+        }
+    }
+
+    return newArr;
+}

@@ -6,6 +6,11 @@ const INITIAL_STATE = {
     teams: 1,
     playersPerTeam: 1,
     error: '',
+    picker: {
+        display: false,
+        numberTeams: false,
+        numberPlayers: false
+    }
 };
 
 const Store = ({children}) => {
